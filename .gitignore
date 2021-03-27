@@ -136,4 +136,9 @@ dmypy.json
 *.egg-info
 dist
 build
+<<<<<<< HEAD
 >>>>>>> cace48b (add .gitignore)
+=======
+
+*.bak
+>>>>>>> 9efcc7b (update)

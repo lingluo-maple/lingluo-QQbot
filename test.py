@@ -19,17 +19,29 @@ class English_Words():
                     
     def function(self):
         length = len(self.words)
+        print("总长度:",length-1)
         English_Words.GetWord(self,randint(1,length))
                     
-    def Split(self):
-         for i in self.words:
-             print(i)
-             time.sleep(1)
-             print(i.split())
-             time.sleep(1)
-
+    def Split(self,word):
+        ''' word : 被分割的字符串 
+          en : 英语词汇
+          Phonepic_symbol : 英语音标
+          Part_of_speech : 词性
+          zh : 汉语含义
+        '''
+        result = word.split()
+        en = result[0]
+        Phonepic_symbol = result[1]
+        Part_of_speech = result[2]
+        zh = result[3]
+        word_element = [en,Phonepic_symbol,Part_of_speech,zh]
+        for i in word_element:
+            print(i)
+        
     def GetWord(self,id):
-        print(self.words[id])
+        word = self.words[id]
+        print(id,":",word)
+        English_Words.Split(self,word)
             
         
 
