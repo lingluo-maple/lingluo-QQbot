@@ -1,12 +1,10 @@
 Host: 
 Robot:
-Debug: Flase
 DebugGroup: 
   - 1000000
-group:
+Group:
   - 1000000
 Permission:
   123456789: root
-  #权限
-image:
+Image:
   YY_yyds: 入群欢迎图片路径

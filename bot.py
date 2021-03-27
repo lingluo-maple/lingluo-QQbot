@@ -118,9 +118,12 @@ async def group_welocme(app: GraiaMiraiApplication, group: Group, member: Member
         Plain(f"欢迎{member.name}({member.id})入群")
     ]))
     if group.id == 960879609 or group.id in config["DebugGroup"]:
-        await app.sendGroupMessage(group,MessageChain.create([
-            Image.fromLocalFile(config["image"]["YY_yyds"])
-        ]))
+        try:
+            await app.sendGroupMessage(group,MessageChain.create([
+                Image.fromLocalFile(config["image"]["YY_yyds"])
+            ]))
+        except FileNotFoundError:
+            pass
                 
 
 #测试功能 仅测试群
