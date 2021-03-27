@@ -23,11 +23,12 @@ class English_Words():
         English_Words.GetWord(self,randint(1,length))
                     
     def Split(self,word):
-        ''' word : 被分割的字符串 
-          en : 英语词汇
-          Phonepic_symbol : 英语音标
-          Part_of_speech : 词性
-          zh : 汉语含义
+        ''' 
+        word : 被分割的字符串 
+        en : 英语词汇
+        Phonepic_symbol : 英语音标
+        Part_of_speech : 词性
+        zh : 汉语含义
         '''
         result = word.split()
         en = result[0]
