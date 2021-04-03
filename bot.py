@@ -39,7 +39,7 @@ async def group_permission(app: GraiaMiraiApplication, group: Group, member: Mem
     bot = str(group.accountPerm)[11:]
     #机器人权限
     try:
-        perm = config[str(member.id)]
+        perm = config["Permission"][member.id]
     except KeyError:
         perm = "User"
     await app.sendGroupMessage(group,MessageChain.create([
@@ -155,8 +155,8 @@ async def group_message_listener(app: GraiaMiraiApplication, group: Group, membe
         msg = message.asDisplay()
         if msg.startswith("/mute"):
             await group_mute(app,group,member,message)
-        if msg == "信息":
-            await group_peission(app,group,member,message)
+        if msg == "/perm":
+            await group_permission(app,group,member,message)
 
     
 app.launch_blocking()
