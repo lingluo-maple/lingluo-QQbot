@@ -2,8 +2,8 @@ cors:
   - '*'
 host: 0.0.0.0
 port: 8888
-authKey: yourauthkey
-cacheSize: 4096
+authKey: Your_authkey
+cacheSize: 8192
 enableWebsocket: false
 report: 
   enable: false

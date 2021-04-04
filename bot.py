@@ -27,7 +27,7 @@ app = GraiaMiraiApplication(
     connect_info=Session(
         host=f"http://localhost:{mah_config['port']}", 
         authKey=mah_config["authKey"], # 填入 authKey
-        account=config["Robot"], # 你的机器人的 qq 号
+        account=1556566021, # 你的机器人的 qq 号
         websocket=True 
     )
 )
@@ -89,7 +89,7 @@ async def group_mute(app: GraiaMiraiApplication,group,member,message):
         await app.sendGroupMessage(group,MessageChain.create([
             Plain("参数错误，禁言时间应大于0小于259200")
         ]))
-    elif user == 'MemberPerm.Administrator' or user == 'MemberPerm.Owner' and beMute != 1274911913:
+    elif user == 'MemberPerm.Administrator' or user == 'MemberPerm.Owner' and beMute != config["Host"]:
     #发言者权限为管理员或群主
         try:
             await app.mute(group,beMute,muteTime)
@@ -103,6 +103,10 @@ async def group_mute(app: GraiaMiraiApplication,group,member,message):
         ]))
 
 
+async def MCbe_Service(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
+    await app.sendGroupMessage(group,MessageChain.create([
+        Plain("服务器号为52743570")
+    ]))
 
 @bcc.receiver("FriendMessage")
 async def friend_test_function(app: GraiaMiraiApplication, friend: Friend):
@@ -118,12 +122,9 @@ async def group_welocme(app: GraiaMiraiApplication, group: Group, member: Member
         Plain(f"欢迎{member.name}({member.id})入群")
     ]))
     if group.id == 960879609 or group.id in config["DebugGroup"]:
-        try:
-            await app.sendGroupMessage(group,MessageChain.create([
-                Image.fromLocalFile(config["image"]["YY_yyds"])
-            ]))
-        except FileNotFoundError:
-            pass
+        await app.sendGroupMessage(group,MessageChain.create([
+            Image.fromLocalFile(config["image"]["YY_yyds"])
+        ]))
                 
 
 #测试功能 仅测试群
@@ -151,12 +152,15 @@ async def group_test_function(app: GraiaMiraiApplication, group: Group, member: 
 #Main 全群(在设置中)通用
 @bcc.receiver("GroupMessage")
 async def group_message_listener(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
-    if group.id in config["Group"]:
+    if group.id in config["group"]:
         msg = message.asDisplay()
         if msg.startswith("/mute"):
             await group_mute(app,group,member,message)
         if msg == "/perm":
             await group_permission(app,group,member,message)
+        if group.id == config["MCBE_Service"]:
+            if "服务器" in msg:
+                await MCbe_Service(app,group,member,message)
 
     
 app.launch_blocking()
