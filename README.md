@@ -24,4 +24,3 @@ Image | 需要发送的图片的路径
 - [Mirai---使用的QQ机器人框架](https://github.com/mamoe/mirai)
 - [mirai-api-http](https://github.com/project-mirai/mirai-api-http)
 - [Graia Application](https://github.com/GraiaProject/Application)
-- 
