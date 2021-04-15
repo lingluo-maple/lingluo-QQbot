@@ -99,7 +99,7 @@ async def group_test_function(app: GraiaMiraiApplication, group: Group, member: 
 #Main 全群(在设置中)通用
 @bcc.receiver("GroupMessage")
 async def group_message_listener(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
-    if group.id in config["group"]:
+    if group.id in config["Group"]:
         msg = message.asDisplay()
         if msg.startswith("/mute"):
             await group_mute(app,group,member,message)
