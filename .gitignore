@@ -1,4 +1,30 @@
 <<<<<<< HEAD
+# Mirai
+mcl.jar
+mcl
+mcl.cmd
+LICENSE
+*.json
+src/
+data/
+bots/
+images/
+libs/
+src/
+scripts/
+plugins/
+MxLibData/
+config/Console
+
+#Personal
+config/net.mamoe.mirai-api-http/setting.yml
+
+# VSCode
+.idea/
+
+#deving
+GetImage.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
