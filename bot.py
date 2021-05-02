@@ -28,7 +28,7 @@ app = GraiaMiraiApplication(
     connect_info=Session(
         host=f"http://localhost:{mah_config['port']}", 
         authKey=mah_config["authKey"], # 填入 authKey
-        account=1556566021, # 你的机器人的 qq 号
+        account=config["Robot"], # 你的机器人的 qq 号
         websocket=True 
     )
 )
@@ -102,7 +102,7 @@ async def group_message_listener(app: GraiaMiraiApplication, group: Group, membe
     if group.id in config["Group"]:
         msg = message.asDisplay()
         if msg.startswith("/mute"):
-            await group_mute(app,group,member,message)
+            await group_mute(app,group,member,message,config=config)
         if msg == "/perm":
             await group_permission(app,group,member,message)
         if group.id == config["MCBE_Service"]:

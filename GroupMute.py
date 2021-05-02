@@ -6,14 +6,13 @@ import asyncio
 from graia.application.message.elements.internal import Plain, At
 from graia.application.group import Group, Member
 
-async def group_mute(app: GraiaMiraiApplication,group,member,message):
-    user = str(member.permission)
-    if user == 'MemberPerm.Member':
-    #发言者权限为成员
-        await app.sendGroupMessage(group,MessageChain.create([
-            Plain("你的权限不足")
-        ]))
-        return False
+import re
+
+async def group_mute(app: GraiaMiraiApplication,group,member,message, config):
+    "/mute @sb sometime"
+    #获取机器人权限
+    msg = message.asDisplay()
+    # 更新后asDisplay可以获取到AT的QQ号
     bot = str(group.accountPerm)
     if bot == 'MemberPerm.Member':
     #机器人权限为成员
@@ -21,21 +20,29 @@ async def group_mute(app: GraiaMiraiApplication,group,member,message):
             Plain("机器人权限不足")
         ]))
         return False
+    # 获取被禁言者QQ号
     try:
-        beMute = message.get(At)[0].target
+        beMute = int(re.search(r"-n ([0-9]*)",msg).group(1))
+        await app.sendGroupMessage(group,MessageChain.create([
+            Plain(str(beMute))
+        ]))
     except IndexError:
         await app.sendGroupMessage(group,MessageChain.create([
             Plain("参数错误,请输入要禁言的人")
         ]))
         return False
+    # 获取禁言时间
     try:
-        muteTime = int(message.asDisplay()[5:])
+        muteTime = int(re.search(r"-t ([0-9]*)",msg).group(1))
+        await app.sendGroupMessage(group,MessageChain.create([
+            Plain(str(muteTime))
+        ]))
     except ValueError:
         await app.sendGroupMessage(group,MessageChain.create([
             Plain("参数错误,请设置禁言时间(单位:秒)")
         ]))
         return False
-    if beMute == config["host"]:
+    if beMute == config["Host"]:
         await app.sendGroupMessage(group,MessageChain.create([
             Plain("禁言失败，请选择其他人")
         ]))
@@ -47,7 +54,7 @@ async def group_mute(app: GraiaMiraiApplication,group,member,message):
         await app.sendGroupMessage(group,MessageChain.create([
             Plain("参数错误，禁言时间应大于0小于259200")
         ]))
-    elif user == 'MemberPerm.Administrator' or user == 'MemberPerm.Owner' and beMute != config["Host"]:
+    elif config["Permission"][member.id]  and beMute != config["Host"]:
     #发言者权限为管理员或群主
         try:
             await app.mute(group,beMute,muteTime)
