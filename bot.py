@@ -1,12 +1,12 @@
-from graia.broadcast import Broadcast
-from graia.application import GraiaMiraiApplication, Session
-from graia.application.message.chain import MessageChain
 import asyncio
 import time
 
-from graia.application.message.elements.internal import Plain, Image, At, Json
+from graia.application import GraiaMiraiApplication, Session
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
+from graia.application.message.chain import MessageChain
+from graia.application.message.elements.internal import At, Image, Json, Plain
+from graia.broadcast import Broadcast
 
 from GetConfig import GetConfig, GetMahConfig
 from GroupMute import group_mute
@@ -79,11 +79,7 @@ async def group_welocme(app: GraiaMiraiApplication, group: Group, member: Member
 async def group_test_function(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
     if group.id in config["DebugGroup"]:
         msg = message.asDisplay()
-        if msg == "/test":
-            await app.sendGroupMessage(group,MessageChain.create([
-                Plain("Hello,World")
-            ]))
-        elif msg == "/testAt":
+        if msg == "/testAt":
             await app.sendGroupMessage(group,MessageChain.create([
                 Plain("Hello"), At(member.id)
             ]))
@@ -105,6 +101,10 @@ async def group_message_listener(app: GraiaMiraiApplication, group: Group, membe
             await group_mute(app,group,member,message,config=config)
         if msg == "/perm":
             await group_permission(app,group,member,message)
+        if msg == "/test":
+            await app.sendGroupMessage(group,MessageChain.create([
+                Plain("Hello,World")
+            ]))
         if group.id == config["MCBE_Service"]:
             if "服务器" in msg:
                 await MCbe_Service(app,group,member,message)

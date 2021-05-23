@@ -1,5 +1,7 @@
 import sys
+
 import yaml
+
 
 def GetMahConfig():
     path = sys.path[0] + "/config/net.mamoe.mirai-api-http/setting.yml"
