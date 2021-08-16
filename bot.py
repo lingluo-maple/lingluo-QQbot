@@ -1,114 +1,103 @@
 import asyncio
-import time
+import logging
+import re
 
-from graia.application import GraiaMiraiApplication, Session
-from graia.application.friend import Friend
-from graia.application.group import Group, Member
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import At, Image, Json, Plain
+from aiohttp.client import ClientSession
+from avilla import Avilla
+from avilla.builtins.elements import PlainText, Image
+from avilla.event.message import MessageEvent
+from avilla.execution.message import MessageSend
+from avilla.message.chain import MessageChain
+from avilla.network.clients.aiohttp import AiohttpWebsocketClient
+from avilla.onebot.config import OnebotConfig, WebsocketCommunication
+from avilla.onebot.protocol import OnebotProtocol
+from avilla.relationship import Relationship
 from graia.broadcast import Broadcast
+from pathlib import Path
+from yarl import URL
 
-from GetConfig import GetConfig, GetMahConfig
-from GroupMute import group_mute
+from GetConfig import get_config
+from utils.pixiv import Pixiv
+from utils.sql import add_new, update_time, query
+from message_handler import *
 
-try:
-    mah_config = GetMahConfig()
-    print("获取mah配置成功")
-    config = GetConfig()
-    print("获取机器人配置成功")
-except FileNotFoundError:
-    print("配置文件未找到:请确保文件与mirai在同一目录")
-    exit()
-
-loop = asyncio.get_event_loop()
-
-bcc = Broadcast(loop=loop)
-app = GraiaMiraiApplication(
-    broadcast=bcc,
-    connect_info=Session(
-        host=f"http://localhost:{mah_config['port']}", 
-        authKey=mah_config["authKey"], # 填入 authKey
-        account=config["Robot"], # 你的机器人的 qq 号
-        websocket=True 
-    )
+logging.basicConfig(
+    format="%(asctime)s - [%(levelname)s]: %(message)s",
+    level=logging.INFO,
 )
 
-async def group_permission(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
-# 获取群权限
-    user = str(member.permission)[11:]
-    #发言者权限
-    bot = str(group.accountPerm)[11:]
-    #机器人权限
-    try:
-        perm = config["Permission"][member.id]
-    except KeyError:
-        perm = "User"
-    await app.sendGroupMessage(group,MessageChain.create([
-        Plain("您的权限为:"), Plain(user), Plain("\n"),
-        Plain("机器人的权限为:"), Plain(bot), Plain("\n"),
-        Plain("您对机器人的权限为:"), Plain(perm)
-    ]))
-    
+try:
+    config = get_config()
+    logging.info("获取机器人配置成功")
+except FileNotFoundError:
+    logging.error("配置文件未找到")
+    mode = input("输入y/Y继续，输入其他退出")
+    if mode != "y" or mode != "Y":
+        exit()
+    else:
+        logging.warning("程序将继续运行")
 
-async def MCbe_Service(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
-    await app.sendGroupMessage(group,MessageChain.create([
-        Plain("服务器号为52743570")
-    ]))
+loop = asyncio.get_event_loop()
+broadcast = Broadcast(loop=loop)
+session = ClientSession(loop=loop)
+avilla = Avilla(
+    broadcast,
+    OnebotProtocol,
+    {"ws": AiohttpWebsocketClient(session)},
+    {
+        OnebotProtocol:
+        OnebotConfig(
+            access_token="avilla-test",
+            bot_id=config["bot_qq"],
+            communications={
+                "ws":
+                WebsocketCommunication(api_root=URL("ws://127.0.0.1:6700/"))
+            },
+        )
+    },
+)
 
-@bcc.receiver("FriendMessage")
-async def friend_test_function(app: GraiaMiraiApplication, friend: Friend):
-    await app.sendFriendMessage(friend, MessageChain.create([
-        Plain("Hello, World!")
-    ]))
-        
+@broadcast.receiver(MessageEvent)
+async def global_message_handler(rs: Relationship, message: MessageChain):
+    '''全局消息处理函数'''
+    msg = message.as_display()
+    sender_name = rs.ctx.profile.name
+    sender_id = rs.ctx.id
+    group_id = rs.ctx.profile.group.id
+    group_name = rs.ctx.profile.group.profile.name
+    logging.info(f"{group_name}({group_id})-{sender_name}({sender_id}): {msg}")
+    if sender_id == "1274911913":
+        await event_receiver_test(rs, msg)
+    if msg.startswith("pixiv"):
+        await pixiv_request(rs, msg)
+    if "来点" in msg and "色图" in msg:
+        params = re.search("来点(.*)色图", msg)
+        if params:
+            params = params.group(1)
+        await lolicon_imgs(rs, params)
+    # if group_id == "792068440":
+    #     await member_send_time(sender_name, sender_id)
+    # if (group_id == "792068440" or group_id == "962618214") and sender_id == "1274911913" and msg == "query":
+    #     result = await query()
+    #     await rs.exec(MessageSend([PlainText(result)]))
 
-#入群欢迎
-@bcc.receiver("MemberJoinEvent")
-async def group_welocme(app: GraiaMiraiApplication, group: Group, member: Member):
-    await app.sendGroupMessage(group,MessageChain.create([
-        Plain(f"欢迎{member.name}({member.id})入群")
-    ]))
-    if group.id == 960879609 or group.id in config["DebugGroup"]:
-        await app.sendGroupMessage(group,MessageChain.create([
-            Image.fromLocalFile(config["image"]["YY_yyds"])
-        ]))
-                
+async def member_send_time(sender_name, sender_id):
+    result = await add_new(sender_id)
+    if result:
+        logging.info(f"{sender_name}({sender_id})记录成功")
+    else:
+        logging.info(f"{sender_name}({sender_id})已记录")
+        await update_time(sender_id)
 
-#测试功能 仅测试群
-@bcc.receiver("GroupMessage")
-async def group_test_function(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
-    if group.id in config["DebugGroup"]:
-        msg = message.asDisplay()
-        if msg == "/testAt":
-            await app.sendGroupMessage(group,MessageChain.create([
-                Plain("Hello"), At(member.id)
-            ]))
-        elif message.asDisplay() == "/list":
-            get = str(await app.groupList())
-            await app.sendGroupMessage(group,MessageChain.create([
-                Plain(get)
-            ]))
-        elif msg == "/WelcomeTest":
-            await group_welocme(app,group,member)
-    
+async def event_receiver_test(rs: Relationship, msg: str):
+    "Test function"
+    if msg == "test":
+        await rs.exec(MessageSend([PlainText('Hello, World!')]))
 
-#Main 全群(在设置中)通用
-@bcc.receiver("GroupMessage")
-async def group_message_listener(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
-    if group.id in config["Group"]:
-        msg = message.asDisplay()
-        if msg.startswith("/mute"):
-            await group_mute(app,group,member,message,config=config)
-        if msg == "/perm":
-            await group_permission(app,group,member,message)
-        if msg == "/test":
-            await app.sendGroupMessage(group,MessageChain.create([
-                Plain("Hello,World")
-            ]))
-        if group.id == config["MCBE_Service"]:
-            if "服务器" in msg:
-                await MCbe_Service(app,group,member,message)
-
-    
-app.launch_blocking()
-
+try:
+    loop.run_until_complete(avilla.launch())
+    loop.run_forever()
+except KeyboardInterrupt:
+    exit()
+finally:
+    loop.close()
