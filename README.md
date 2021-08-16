@@ -16,6 +16,8 @@
 
 ## 鸣谢
 
-[Onebot]:(https://github.com/botuniverse/onebot)
-[go-cqhttp]:(https://github.com/Mrs4s/go-cqhttp)
-[AvillaCore]:(https://github.com/GraiaProject/AvillaCore)
+[Onebot] (https://github.com/botuniverse/onebot)
+
+[go-cqhttp] (https://github.com/Mrs4s/go-cqhttp)
+
+[AvillaCore] (https://github.com/GraiaProject/AvillaCore)
