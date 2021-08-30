@@ -18,7 +18,7 @@ engine = create_async_engine("mysql+aiomysql://root:123789.ma_59BD67@localhost/g
 
 async def query() -> list:
     async with AsyncSession(engine) as session:
-        reslt = await session.execute("SELECT * FROM member;")
+        reslt = await session.execute("SELECT uid, qq FROM member;")
         res = []
         for row in reslt:
             logging.info(f"ROW: {row}")

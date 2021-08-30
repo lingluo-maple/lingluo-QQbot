@@ -1,0 +1,7 @@
+Debug: Flase
+Group:
+  '123456789':
+    global: true
+    name: "\u5DE5\u5177\u7FA4"
+bot_qq: 111111
+test: false

@@ -35,27 +35,31 @@ async def _parser(res: dict) -> list:
         raise LoliconAPIEmptyError
     return [pid, title, url, name]
 
-async def _download(url, name) -> NoReturn:
+async def _download(url, name, force) -> NoReturn:
     file = Path(f"imgs/pixiv/{name}")
-    if file.exists():
+    if file.exists() and not force:
         logging.info(f"{name}已存在")
         return
     else:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as rep:
                 content = await rep.read()
-        async with aiofiles.open(f"imgs/lolicon/{name}", "ab") as f:
-            await f.write(content)
+        if not force:
+            async with aiofiles.open(f"imgs/lolicon/{name}", "ab") as f:
+                await f.write(content)
+        else:
+            async with aiofiles.open(f"imgs/lolicon/{name}", "wb") as f:
+                await f.write(content)
         logging.info(f"{name}下载完毕")
 
-async def get_img(params: str):
+async def get_img(params: str, force):
     if params:
         params = "?tag=" + params
     res = await _get_data(params)
     rep = await _parser(res)
     url = rep[2]
     name = rep[3]
-    await _download(url, name)
+    await _download(url, name, force)
     return rep
 
 if __name__ == "__main__":
