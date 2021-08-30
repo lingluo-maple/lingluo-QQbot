@@ -63,13 +63,11 @@ async def rm_file(msg: str):
 
 async def send_message(rs:Relationship, msg: str):
     params = msg.split()
-    group = msg[1]
+    group = params[1]
     text = params[2]
     message = MessageChain.create([PlainText(text)])
-    await rs.exec(MessageSend(message), Group(group, GroupProfile()))
+    await rs.exec(MessageSend(message), target=Group(group, GroupProfile()))
 
-
-limit = []
 
 async def pixiv_request(rs: Relationship, msg: str):
     global limit
@@ -84,12 +82,7 @@ async def pixiv_request(rs: Relationship, msg: str):
 
     if not pid:
         send_message = MessageChain.create([PlainText("指令识别错误，语法：pixiv [pid] <size>")])
-    else:
-        if len(limit) > 5:
-            await rs.exec(MessageSend(MessageChain.create([PlainText("当前任务过多，请稍后再试")])))
-            return
 
-        limit.append(1)
         await rs.exec(MessageSend(MessageChain.create([PlainText("指令已收到，请稍后")])))
         pixiv = Pixiv()
         urls = await pixiv.get_img(pid, size)
@@ -107,15 +100,10 @@ async def pixiv_request(rs: Relationship, msg: str):
                 send_message = MessageChain.create([PlainText(f"没有{size}尺寸的图")])
     logging.info(send_message)
     await rs.exec(MessageSend(send_message))
-    limit.pop()
 
 
 async def lolicon_imgs(rs: Relationship, params: str, force: bool):
     """Get image from Lolicon API"""
-    if len(limit) > 5:
-        await rs.exec(MessageSend(MessageChain.create([PlainText("当前任务过多，请稍后再试")])))
-        return
-    limit.append(1)
     if "或" in params:
         params = params.replace("或", "|")
     if "和" in params:
@@ -130,7 +118,6 @@ async def lolicon_imgs(rs: Relationship, params: str, force: bool):
     except LoliconAPIEmptyError:
         message = MessageChain.create([PlainText("无此tag")])
     await rs.exec(MessageSend(message))
-    limit.pop()
 
 
 async def image_search(rs: Relationship, message: MessageChain):

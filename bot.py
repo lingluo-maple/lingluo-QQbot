@@ -32,6 +32,7 @@ try:
     logging.info("获取机器人配置成功")
 except FileNotFoundError:
     logging.error("配置文件未找到")
+    exit()
 
 loop = asyncio.get_event_loop()
 broadcast = Broadcast(loop=loop)
